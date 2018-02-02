@@ -1,0 +1,47 @@
+#!/usr/bin/python
+
+from gnucash import Session, Account, Split, GncPrice
+from alpha_vantage.timeseries import TimeSeries
+from fractions import Fraction
+from datetime import datetime
+
+session = Session("xml://./money.gnucash")
+root = session.book.get_root_account()
+book = session.book
+account = book.get_root_account()
+pdb = book.get_price_db()
+
+table = book.get_table()
+
+symbols = ["GOOGL", "APPL"]
+
+for symbol in symbols:
+    stock = table.lookup("NASDAQ", symbol)
+    cur = table.lookup("CURRENCY", "USD")
+
+    prices = pdb.get_prices(stock, cur), 
+    price = prices[0][0]
+
+    for i in range(1, len(prices)):
+        pdb.remove_price(prices[i])
+
+    ts = TimeSeries(key="your alpha_vantage key")
+    data, meta_data = ts.get_monthly(symbol)
+
+    for key in data:
+        desired_years = ["2017", "2018"]
+        for year in desired_years:
+            if year in key:
+                new_price = price.clone(book)
+                new_price = GncPrice(instance = new_price)
+                year, month, day = list(map(int, key.split("-")))
+                new_price.set_time(datetime(year, month, day))
+                value = new_price.get_value()
+                value.num   = int(Fraction.from_float(float(data[key]["4. close"])).limit_denominator(100000).numerator)
+                value.denom = int(Fraction.from_float(float(data[key]["4. close"])).limit_denominator(100000).denominator)
+                new_price.set_value(value)
+                pdb.add_price(new_price)
+
+session.save()
+session.end()
+session.destroy()
