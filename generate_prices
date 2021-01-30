@@ -1,13 +1,67 @@
 #!/usr/bin/python3
 
 from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.cryptocurrencies import CryptoCurrencies
+from alpha_vantage.foreignexchange import ForeignExchange
 
-symbols = ["GOOGL", "APPL"]
+api_key = "key"
 
-for symbol in symbols:
-    ts = TimeSeries(key="your alpha_vantage key")
-    data, meta_data = ts.get_monthly(symbol)
-    for key in data:
-        for year in desired_years:
-            if year in key:
-                print("P " + key.replace("-", "/") + " " + symbol + " " + data[key]["4. close"] + " USD")
+
+def stocks(symbols, desired_years):
+    for symbol in symbols:
+        ts = TimeSeries(key=api_key)
+        data, meta_data = ts.get_monthly(symbol)
+        for key in data:
+            for year in desired_years:
+                if year in key:
+                    print(
+                        "P "
+                        + key.replace("-", "/")
+                        + " "
+                        + symbol
+                        + " "
+                        + data[key]["4. close"]
+                        + " USD"
+                    )
+
+
+def crypto(symbols, desired_years):
+    for symbol in symbols:
+        cc = CryptoCurrencies(key=api_key)
+        data, meta_data = cc.get_digital_currency_monthly(symbol, market="USD")
+        for key in data:
+            for year in desired_years:
+                if year in key:
+                    print(
+                        "P "
+                        + key.replace("-", "/")
+                        + " "
+                        + symbol
+                        + " "
+                        + data[key]["4a. close (USD)"]
+                        + " USD"
+                    )
+
+
+def currency(symbols, desired_years):
+    for symbol in symbols:
+        fe = ForeignExchange(key=api_key)
+        data, meta_data = fe.get_currency_exchange_monthly(symbol, "USD")
+        for key in data:
+            for year in desired_years:
+                if year in key:
+                    print(
+                        "P "
+                        + key.replace("-", "/")
+                        + " "
+                        + symbol
+                        + " "
+                        + data[key]["4. close"]
+                        + " USD"
+                    )
+
+
+desired_years = ["2017", "2018", "2019", "2020", "2021"]
+# stocks(["APPL"], desired_years)
+# crypto(["ETH"], desired_years)
+# currency(["EUR"], desired_years)
